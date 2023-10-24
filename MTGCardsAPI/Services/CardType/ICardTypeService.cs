@@ -8,7 +8,7 @@ namespace MTGCardsAPI.Services.CardTypeService
     {
         Task<ServiceResponse<List<CardType>>> GetAllTypes();
         Task<ServiceResponse<List<CardType>>> GetTypesByName(string name);
-        Task<ServiceResponse<CardType>> FindCardTypeById(int id);
+        Task<ServiceResponse<List<CardType>>> CreateCardType(CardType request);
         Task<ServiceResponse<CardType>> EditCardType(int id, CardType request);
         Task<ServiceResponse<List<CardType>>> RemoveCardType(int id);
 

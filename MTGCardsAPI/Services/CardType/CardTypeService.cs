@@ -1,5 +1,7 @@
 ﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using MTGCardsAPI.DTO;
 
 namespace MTGCardsAPI.Services.CardTypeService
 
@@ -16,40 +18,25 @@ namespace MTGCardsAPI.Services.CardTypeService
         public async Task<ServiceResponse<CardType>> EditCardType(int id, CardType request)
         {
             var response = new ServiceResponse<CardType>();
-            var findType = await FindCardTypeById(id);
+            var searchResult = await FindCardTypeById(id);
             
-            if (findType.Success == false)
+            if (searchResult.Success == false)
             {
                 response.Success = false;
-                response.Message = findType.Message;
+                response.Message = searchResult.Message;
             }
             else
             {
-                var updateType = findType.Data;
+                var toUpdateType = searchResult.Data;
 
-                updateType.Name = request.Name;
-                updateType.Cards = request.Cards;
+                toUpdateType.Name = request.Name;
+                toUpdateType.Cards = request.Cards;
+                _context.Update(toUpdateType);
+                _context.SaveChanges();
 
-                response.Data = updateType;
+                response.Data = toUpdateType;
             }
 
-            return response;
-        }
-
-        public async Task<ServiceResponse<CardType>> FindCardTypeById(int id)
-        {
-            var response = new ServiceResponse<CardType>();
-            var card = await _context.CardTypes.FindAsync(id);
-
-            if (card == null)
-            {
-                response.Success = false;
-                response.Message = "Cardtype was not found.";
-            }
-            else 
-            {
-                response.Data = card;
-            }
             return response;
         }
 
@@ -64,25 +51,64 @@ namespace MTGCardsAPI.Services.CardTypeService
 
         public async Task<ServiceResponse<List<CardType>>> GetTypesByName(string name)
         {
-            var response = new ServiceResponse<List<CardType>>
-            {
-                Data = await _context.CardTypes
+            var response = new ServiceResponse<List<CardType>>();
+            var searchResult = await _context.CardTypes
                         .Where(ct => ct.Name.ToLower()
                         .Contains(name.ToLower()))
-                        .ToListAsync()
-            };
+                        .ToListAsync();
+
+            if (searchResult.Count > 0)
+            {
+                response.Data = searchResult;
+            }
+            else
+            {
+                response.Data = new List<CardType>();
+                response.Success = false;
+                response.Message = "No Cardtypes found";
+            }
+
+            return response;
+        }
+
+        public async Task<ServiceResponse<List<CardType>>> CreateCardType(CardType request)
+        {
+            var response = new ServiceResponse<List<CardType>>();
+            _context.CardTypes.Add(request);
+            var saveCount = await _context.SaveChangesAsync();
+
+            if (saveCount > 0)
+            {
+                response.Data = await GetAll();
+            }
+            else 
+            {
+                response.Data = new List<CardType>();
+                response.Success = false;
+                response.Message = "Cardtype was not created.";
+            }
+
             return response;
         }
 
         public async Task<ServiceResponse<List<CardType>>> RemoveCardType(int id)
         {
             var response = new ServiceResponse<List<CardType>>();
-            var searchResult = FindById(id).Result;
+            var searchResult = await FindCardTypeById(id);
 
-            _context.CardTypes.Remove(searchResult);
-            await _context.SaveChangesAsync();
+            if (searchResult.Data != null)
+            {
+                _context.CardTypes.Remove(searchResult.Data);
+                await _context.SaveChangesAsync();
 
-            response.Data = await GetAll();
+                response.Data = await GetAll();
+            }
+            else
+            {
+                response.Success = searchResult.Success;
+                response.Message = searchResult.Message;
+            }
+
             return response;
         }
 
@@ -90,12 +116,22 @@ namespace MTGCardsAPI.Services.CardTypeService
         {
             return await _context.CardTypes.ToListAsync();
         }
-        /*
-        private async Task<CardType> FindById(int id)
+
+        private async Task<ServiceResponse<CardType>> FindCardTypeById(int id)
         {
-            return await _context.CardTypes.FindAsync(id);
-        }*/
+            var response = new ServiceResponse<CardType>();
+            var card = await _context.CardTypes.FindAsync(id);
 
-
+            if (card == null)
+            {
+                response.Success = false;
+                response.Message = "Cardtype was not found.";
+            }
+            else
+            {
+                response.Data = card;
+            }
+            return response;
+        }
     }
 }
