@@ -5,8 +5,9 @@ namespace MTGCardsAPI.DTO
 {
     public class CardTypeDTO
     {
+        public int Id { get; set; }
         [Required]
         [MaxLength(100)]
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; }
     }
 }

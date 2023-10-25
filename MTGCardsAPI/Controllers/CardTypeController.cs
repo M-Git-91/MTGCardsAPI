@@ -18,7 +18,7 @@ namespace MTGCardsAPI.Controllers
 
         [HttpGet]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<CardType>>>> GetAllTypes()
+        public async Task<ActionResult<ServiceResponse<List<CardTypeDTO>>>> GetAllTypes()
         {
             return Ok(await _typeService.GetAllTypes());
         }
@@ -26,7 +26,7 @@ namespace MTGCardsAPI.Controllers
 
         [HttpGet("{name}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<CardType>>>> GetTypesByName(string name) 
+        public async Task<ActionResult<ServiceResponse<List<CardTypeDTO>>>> GetTypesByName(string name) 
         {             
             return Ok(await _typeService.GetTypesByName(name));
         }
@@ -35,7 +35,7 @@ namespace MTGCardsAPI.Controllers
         [HttpPost]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<List<CardType>>> CreateCardType(CardType request) 
+        public async Task<ActionResult<List<CardTypeDTO>>> CreateCardType(CardTypeDTO request) 
         {
             if (!ModelState.IsValid)
             {
@@ -48,7 +48,7 @@ namespace MTGCardsAPI.Controllers
         [HttpPut]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ServiceResponse<CardType>>> EditCardType(int id, CardType request) 
+        public async Task<ActionResult<ServiceResponse<CardTypeDTO>>> EditCardType(int id, CardTypeDTO request) 
         {
             if (!ModelState.IsValid)
             {
@@ -59,7 +59,7 @@ namespace MTGCardsAPI.Controllers
 
         [HttpDelete]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<List<CardType>>> RemoveCardType(int id) 
+        public async Task<ActionResult<List<CardTypeDTO>>> RemoveCardType(int id) 
         {   
             return Ok(await _typeService.RemoveCardType(id));
         }

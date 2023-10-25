@@ -2,6 +2,7 @@ global using Microsoft.AspNetCore.Mvc;
 global using MTGCardsAPI.Data;
 global using Microsoft.EntityFrameworkCore;
 global using MTGCardsAPI.Models;
+global using MTGCardsAPI.DTO;
 using MTGCardsAPI.Services.CardTypeService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddScoped<ICardTypeService, CardTypeService>();
 
 builder.Services.AddDbContext<DataContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection")));
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 var app = builder.Build();
 
