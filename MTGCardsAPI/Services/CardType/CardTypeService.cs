@@ -42,28 +42,50 @@ namespace MTGCardsAPI.Services.CardTypeService
             return response;
         }
 
-        public async Task<ServiceResponse<List<CardTypeDTO>>> GetAllTypes()
-        {
-            var response = new ServiceResponse<List<CardTypeDTO>>
-            {
-                Data = await GetAll()
-            }; 
+        public async Task<ServiceResponse<List<CardTypeDTO>>> GetAllTypes(int page)
+        {   
+            var pageResults = 5f;
+            var allProducts = await GetAll();
+            var pageCount = Math.Ceiling(allProducts.Count() / pageResults);
+            
+
+            var paginateCardTypes = await _context.CardTypes
+                                .Skip((page - 1) * (int)pageResults)
+                                .Take((int)pageResults)
+                                .ToListAsync();
+            
+            var mapDto = paginateCardTypes.Select(pct => _mapper.Map<CardTypeDTO>(pct));
+            
+            var response = new ServiceResponse<List<CardTypeDTO>> { Data = new List<CardTypeDTO>() };
+            response.Data.AddRange(mapDto);
+            response.Pages = (int)pageCount;
+            response.CurrentPage = page;
+
             return response;
         }
 
-        public async Task<ServiceResponse<List<CardTypeDTO>>> GetTypesByName(string name)
+        public async Task<ServiceResponse<List<CardTypeDTO>>> GetTypesByName(string name, int page)
         {
-            var response = new ServiceResponse<List<CardTypeDTO>>();
+            var response = new ServiceResponse<List<CardTypeDTO>> { Data = new List<CardTypeDTO>() };
             var searchResult = await _context.CardTypes
                         .Where(ct => ct.Name.ToLower()
                         .Contains(name.ToLower()))
                         .ToListAsync();
 
+
             if (searchResult.Count > 0)
             {
-                searchResult.Select(sr => _mapper.Map<CardTypeDTO>(sr));
-                response.Data = new List<CardTypeDTO>();
-                response.Data.AddRange(searchResult.Select(sr => _mapper.Map<CardTypeDTO>(sr)));
+                var pageResults = 5f;
+                var pageCount = Math.Ceiling(searchResult.Count() / pageResults);
+
+                var paginateCardTypes = searchResult
+                                .Skip((page - 1) * (int)pageResults)
+                                .Take((int)pageResults);
+
+                var mapDto = paginateCardTypes.Select(sr => _mapper.Map<CardTypeDTO>(sr));
+                response.Data.AddRange(mapDto);
+                response.Pages = (int)pageCount;
+                response.CurrentPage = page;
             }
             else
             {
