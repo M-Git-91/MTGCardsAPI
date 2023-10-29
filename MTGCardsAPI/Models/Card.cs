@@ -12,7 +12,7 @@ namespace MTGCardsAPI.Models
         [MaxLength(100)]
         public string Name { get; set; } = string.Empty;
         public string ImageURL { get; set; } = string.Empty;
-        public List<Colour> Colours { get; set; }
+        public List<Colour> Colours { get; set; } = new List<Colour>();
         public List<Ability>? Abilities { get; set; }
         [MaxLength(1500)]
         public string RulesText { get; set; } = string.Empty;
@@ -20,7 +20,7 @@ namespace MTGCardsAPI.Models
         public string? FlavourText { get; set; }
         public int Power { get; set; }
         public int Toughness { get; set; }
-        public Set Set { get; set; }
-        public List<CardType> Type { get; set; }
+        public Set Set { get; set; } = new Set();
+        public List<CardType> Type { get; set; } = new List<CardType>();
     }
 }

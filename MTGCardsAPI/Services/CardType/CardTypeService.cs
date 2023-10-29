@@ -2,6 +2,7 @@
 using Azure.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Services;
 using MTGCardsAPI.DTO;
 
 namespace MTGCardsAPI.Services.CardTypeService
@@ -30,13 +31,11 @@ namespace MTGCardsAPI.Services.CardTypeService
             }
             else
             {
-                var toUpdateType = searchResult.Data;
+                searchResult.Data.Name = request.Name;
+                response.Data = _mapper.Map<CardTypeDTO>(searchResult.Data);
 
-                toUpdateType.Name = request.Name;
-                _context.Update(toUpdateType);
+                _context.Update(searchResult.Data);
                 _context.SaveChanges();
-
-                response.Data.Name = toUpdateType.Name;
             }
 
             return response;
@@ -45,8 +44,8 @@ namespace MTGCardsAPI.Services.CardTypeService
         public async Task<ServiceResponse<List<CardTypeDTO>>> GetAllTypes(int page)
         {   
             var pageResults = 5f;
-            var allProducts = await GetAll();
-            var pageCount = Math.Ceiling(allProducts.Count() / pageResults);
+            var allCardTypes = await GetAll();
+            var pageCount = Math.Ceiling(allCardTypes.Count() / pageResults);
             
 
             var paginateCardTypes = await _context.CardTypes
@@ -97,9 +96,9 @@ namespace MTGCardsAPI.Services.CardTypeService
             return response;
         }
 
-        public async Task<ServiceResponse<List<CardTypeDTO>>> CreateCardType(CardTypeDTO request)
+        public async Task<ServiceResponse<CardTypeDTO>> CreateCardType(CardTypeDTO request)
         {
-            var response = new ServiceResponse<List<CardTypeDTO>>();
+            var response = new ServiceResponse<CardTypeDTO>();
             CardType newCardType = new CardType { Name = request.Name };
 
             _context.CardTypes.Add(newCardType);
@@ -107,11 +106,11 @@ namespace MTGCardsAPI.Services.CardTypeService
 
             if (saveCount > 0)
             {
-                response.Data = await GetAll();
+                response.Data = _mapper.Map<CardTypeDTO>(newCardType);
             }
             else 
             {
-                response.Data = new List<CardTypeDTO>();
+                response.Data = new CardTypeDTO();
                 response.Success = false;
                 response.Message = "Cardtype was not created.";
             }
@@ -129,7 +128,7 @@ namespace MTGCardsAPI.Services.CardTypeService
                 _context.CardTypes.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = await GetAll();
+                response.Data = new List<CardTypeDTO>();
             }
             else
             {

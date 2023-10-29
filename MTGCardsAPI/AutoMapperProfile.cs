@@ -6,8 +6,8 @@ namespace MTGCardsAPI
     {
         public AutoMapperProfile()
         {
-            CreateMap<CardType, CardTypeDTO>();
-            CreateMap<CardTypeDTO, CardType>();
+            CreateMap<CardType, CardTypeDTO>().ReverseMap();
+            CreateMap<AbilityDTO, Ability>().ReverseMap();
         }
     }
 }

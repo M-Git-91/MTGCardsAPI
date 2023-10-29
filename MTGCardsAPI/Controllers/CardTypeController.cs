@@ -7,12 +7,10 @@ namespace MTGCardsAPI.Controllers
     [ApiController]
     public class CardTypeController : ControllerBase
     {
-        private readonly DataContext _context;
         private readonly ICardTypeService _typeService;
 
-        public CardTypeController(DataContext context, ICardTypeService typeService)
+        public CardTypeController(ICardTypeService typeService)
         {
-            _context = context;
             _typeService = typeService;
         }
 
@@ -32,7 +30,7 @@ namespace MTGCardsAPI.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("create")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<List<CardTypeDTO>>> CreateCardType(CardTypeDTO request) 
@@ -45,7 +43,7 @@ namespace MTGCardsAPI.Controllers
         }
 
 
-        [HttpPut]
+        [HttpPut("edit/{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<ServiceResponse<CardTypeDTO>>> EditCardType(int id, CardTypeDTO request) 
@@ -57,7 +55,7 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _typeService.EditCardType(id, request));
         }
 
-        [HttpDelete]
+        [HttpDelete("delete/{id}")]
         [ProducesResponseType(200)]
         public async Task<ActionResult<List<CardTypeDTO>>> RemoveCardType(int id) 
         {   

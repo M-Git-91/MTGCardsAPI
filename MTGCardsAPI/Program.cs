@@ -4,6 +4,7 @@ global using Microsoft.EntityFrameworkCore;
 global using MTGCardsAPI.Models;
 global using MTGCardsAPI.DTO;
 using MTGCardsAPI.Services.CardTypeService;
+using MTGCardsAPI.Services.Ability;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ICardTypeService, CardTypeService>();
+builder.Services.AddScoped<IAbilityService, AbilityService>();
+
 
 builder.Services.AddDbContext<DataContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection")));
