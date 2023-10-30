@@ -41,5 +41,24 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _abilityService.EditAbility(id, request));
         }
 
+        [HttpPost("create")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<List<Ability>>> CreateAbility(AbilityDTO request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(request);
+            }
+            return Ok(await _abilityService.CreateAbility(request));
+        }
+
+        [HttpDelete("delete/{id}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<List<AbilityDTO>>> RemoveAbility(int id)
+        {
+            return Ok(await _abilityService.RemoveAbility(id));
+        }
+
     }
 }

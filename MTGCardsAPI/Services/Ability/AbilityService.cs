@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using MTGCardsAPI.Models;
 
 namespace MTGCardsAPI.Services.Ability
 {
@@ -15,9 +14,29 @@ namespace MTGCardsAPI.Services.Ability
             _mapper = mapper;
         }
 
-        public Task<ServiceResponse<List<AbilityDTO>>> CreateAbility(AbilityDTO request)
+        public async Task<ServiceResponse<AbilityDTO>> CreateAbility(AbilityDTO request)
         {
-            throw new NotImplementedException();
+            var response = new ServiceResponse<AbilityDTO>();
+            Models.Ability newAbility = new Models.Ability { 
+                Name = request.Name,
+                Description = request.Description,
+            };
+
+            _context.Abilities.Add(newAbility);
+            var saveCount = await _context.SaveChangesAsync();
+
+            if (saveCount > 0)
+            {
+                response.Data = _mapper.Map<AbilityDTO>(newAbility);
+            }
+            else
+            {
+                response.Data = new AbilityDTO();
+                response.Success = false;
+                response.Message = "Ability was not created.";
+            }
+
+            return response;
         }
 
         public async Task<ServiceResponse<AbilityDTO>> EditAbility(int id, AbilityDTO request)
@@ -32,8 +51,10 @@ namespace MTGCardsAPI.Services.Ability
             }
             else
             {
-                searchResult.Data = _mapper.Map<Models.Ability>(request);
-                response.Data = _mapper.Map<AbilityDTO>(searchResult);
+                searchResult.Data.Name = request.Name;
+                searchResult.Data.Description = request.Description;
+                
+                response.Data = _mapper.Map<AbilityDTO>(searchResult.Data);
 
                 _context.Update(searchResult.Data);
                 _context.SaveChanges();
@@ -97,9 +118,25 @@ namespace MTGCardsAPI.Services.Ability
             return response;
         }
 
-        public Task<ServiceResponse<List<AbilityDTO>>> RemoveAbility(int id)
+        public async Task<ServiceResponse<List<AbilityDTO>>> RemoveAbility(int id)
         {
-            throw new NotImplementedException();
+            var response = new ServiceResponse<List<AbilityDTO>>();
+            var searchResult = await FindAbilityById(id);
+
+            if (searchResult.Data != null)
+            {
+                _context.Abilities.Remove(searchResult.Data);
+                await _context.SaveChangesAsync();
+
+                response.Data = new List<AbilityDTO>();
+            }
+            else
+            {
+                response.Success = searchResult.Success;
+                response.Message = searchResult.Message;
+            }
+
+            return response;
         }
 
         private async Task<List<AbilityDTO>> GetAll()

@@ -5,6 +5,7 @@ global using MTGCardsAPI.Models;
 global using MTGCardsAPI.DTO;
 using MTGCardsAPI.Services.CardTypeService;
 using MTGCardsAPI.Services.Ability;
+using MTGCardsAPI.Services.ColourService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ICardTypeService, CardTypeService>();
 builder.Services.AddScoped<IAbilityService, AbilityService>();
+builder.Services.AddScoped<IColourService, ColourService>();
 
 
 builder.Services.AddDbContext<DataContext>(options => 
