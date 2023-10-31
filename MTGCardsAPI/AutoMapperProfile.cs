@@ -9,6 +9,7 @@ namespace MTGCardsAPI
             CreateMap<CardType, CardTypeDTO>().ReverseMap();
             CreateMap<AbilityDTO, Ability>().ReverseMap();
             CreateMap<ColourDTO, Colour>().ReverseMap();
+            CreateMap<SetDTO, Set>().ReverseMap();
         }
     }
 }

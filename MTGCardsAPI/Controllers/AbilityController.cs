@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using MTGCardsAPI.Services.Ability;
+using MTGCardsAPI.Services.AbilityService;
 
 namespace MTGCardsAPI.Controllers
 {
@@ -44,7 +44,7 @@ namespace MTGCardsAPI.Controllers
         [HttpPost("create")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<List<Ability>>> CreateAbility(AbilityDTO request)
+        public async Task<ActionResult<List<AbilityDTO>>> CreateAbility(AbilityDTO request)
         {
             if (!ModelState.IsValid)
             {

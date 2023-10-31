@@ -1,4 +1,4 @@
-﻿namespace MTGCardsAPI.Services.Ability
+﻿namespace MTGCardsAPI.Services.AbilityService
 {
     public interface IAbilityService
     {

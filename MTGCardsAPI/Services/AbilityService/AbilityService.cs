@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
-namespace MTGCardsAPI.Services.Ability
+namespace MTGCardsAPI.Services.AbilityService
 {
     public class AbilityService : IAbilityService
     {
@@ -17,7 +17,7 @@ namespace MTGCardsAPI.Services.Ability
         public async Task<ServiceResponse<AbilityDTO>> CreateAbility(AbilityDTO request)
         {
             var response = new ServiceResponse<AbilityDTO>();
-            Models.Ability newAbility = new Models.Ability { 
+            Ability newAbility = new Ability { 
                 Name = request.Name,
                 Description = request.Description,
             };
@@ -158,9 +158,9 @@ namespace MTGCardsAPI.Services.Ability
             return response;
         }
 
-        private async Task<ServiceResponse<Models.Ability>> FindAbilityById(int id)
+        private async Task<ServiceResponse<Ability>> FindAbilityById(int id)
         {
-            var response = new ServiceResponse<Models.Ability>();
+            var response = new ServiceResponse<Ability>();
             var ability = await _context.Abilities.FindAsync(id);
 
             if (ability == null)
