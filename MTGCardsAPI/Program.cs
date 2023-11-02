@@ -7,6 +7,7 @@ using MTGCardsAPI.Services.CardTypeService;
 using MTGCardsAPI.Services.AbilityService;
 using MTGCardsAPI.Services.ColourService;
 using MTGCardsAPI.Services.SetService;
+using MTGCardsAPI.Services.CardService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ builder.Services.AddScoped<ICardTypeService, CardTypeService>();
 builder.Services.AddScoped<IAbilityService, AbilityService>();
 builder.Services.AddScoped<IColourService, ColourService>();
 builder.Services.AddScoped<ISetService, SetService>();
+builder.Services.AddScoped<ICardService, CardService>();
 
 
 builder.Services.AddDbContext<DataContext>(options => 

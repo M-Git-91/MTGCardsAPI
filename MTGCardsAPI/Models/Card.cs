@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MTGCardsAPI.Models
 {
@@ -13,7 +14,8 @@ namespace MTGCardsAPI.Models
         public string Name { get; set; } = string.Empty;
         public string ImageURL { get; set; } = string.Empty;
         public List<Colour> Colours { get; set; } = new List<Colour>();
-        public List<Ability>? Abilities { get; set; }
+        //public List<char> ManaCost { get; set; } = new List<char> { ' ' };
+        public List<Ability> Abilities { get; set; } = new List<Ability>();
         [MaxLength(1500)]
         public string RulesText { get; set; } = string.Empty;
         [MaxLength(500)]
