@@ -56,24 +56,25 @@ namespace MTGCardsAPI.Services.CardService
             _context.Cards.Add(newCard);
             var saveCount = await _context.SaveChangesAsync();
 
-            var dto = new CardResponseDTO
-            {
-                Id = newCard.Id,
-                Name = newCard.Name,
-                ImageURL = newCard.ImageURL,
-                Colours = newCard.Colours.Select(c => c.Name).ToList(),
-                Abilities = newCard.Abilities.Select(c => c.Name).ToList(),
-                RulesText = newCard.RulesText,
-                FlavourText = newCard.FlavourText,
-                Power = newCard.Power,
-                Toughness = newCard.Toughness,
-                Set = newCard.Set.Name,
-                Type = newCard.Type.Select(c => c.Name).ToList()
-            };
-
             if (saveCount > 0)
             {
-                response.Data = dto;
+                response.Data = new CardResponseDTO
+                {
+                    Id = newCard.Id,
+                    Name = newCard.Name,
+                    ImageURL = newCard.ImageURL,
+                    Colours = newCard.Colours.Select(c => c.Name).ToList(),
+                    Abilities = newCard.Abilities.Select(c => c.Name).ToList(),
+                    RulesText = newCard.RulesText,
+                    FlavourText = newCard.FlavourText,
+                    Power = newCard.Power,
+                    Toughness = newCard.Toughness,
+                    Set = newCard.Set.Name,
+                    Type = newCard.Type.Select(c => c.Name).ToList()
+                };
+                response.Success = true;
+                response.Message = "Card was successfully created.";
+
                 return response;
             }
             else
@@ -93,47 +94,63 @@ namespace MTGCardsAPI.Services.CardService
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetAllCards(int page)
         {
+            //Search and pagination
             var pageResults = 5f;
             var allCards = await GetAll();
             var pageCount = Math.Ceiling(allCards.Count() / pageResults);
-
-
             var paginateCards = allCards
                                 .Skip((page - 1) * (int)pageResults)
                                 .Take((int)pageResults)
                                 .ToList();
 
+            //Response
             var response = new ServiceResponse<List<CardResponseDTO>> { Data = new List<CardResponseDTO>() };
-
-
             foreach (var card in paginateCards)
             {
-                CardResponseDTO dto = new CardResponseDTO
-                {
-                    Id = card.Id,
-                    Name = card.Name,
-                    ImageURL = card.ImageURL,
-                    Colours = card.Colours.Select(c => c.Name).ToList(),
-                    Abilities = card.Abilities.Select(c => c.Name).ToList(),
-                    RulesText = card.RulesText,
-                    FlavourText = card.FlavourText,
-                    Power = card.Power,
-                    Toughness = card.Toughness,
-                    Set = card.Set.Name,
-                    Type = card.Type.Select(c => c.Name).ToList(),
-                };
-                response.Data.Add(dto);
-            };
-                
+                response.Data.Add(MapCardToResponseDTO(card));
+            };              
             response.Pages = (int)pageCount;
             response.CurrentPage = page;
 
             return response;
         }
 
-        public Task<ServiceResponse<List<Card>>> GetCardsByAbility(string ability, int page)
+        public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByAbility(string ability, int page)
         {
-            throw new NotImplementedException();
+            //Search and pagination
+            var pageResults = 5f;
+
+            var allCards = await GetAll();
+            var findAbility = _context.Abilities.Where(a => a.Name.ToLower() == ability.ToLower()).FirstOrDefault();
+            var findCardsByAbility = _context.Cards
+                                    .Where(c => c.Abilities.Contains(findAbility))
+                                    .ToList();
+
+            var pageCount = Math.Ceiling(findCardsByAbility.Count() / pageResults);
+            var paginateCards = findCardsByAbility
+                                .Skip((page - 1) * (int)pageResults)
+                                .Take((int)pageResults)
+                                .ToList();
+
+            //Response
+            var response = new ServiceResponse<List<CardResponseDTO>> { Data = new List<CardResponseDTO>() };
+
+            if (findCardsByAbility.Count > 0)
+            {
+                foreach (var card in paginateCards)
+                {
+                    response.Data.Add(MapCardToResponseDTO(card));
+                };
+            }
+            else
+            {
+                response.Data = new List<CardResponseDTO>();
+                response.Message = "No cards found";
+            }
+            response.Pages = (int)pageCount;
+            response.CurrentPage = page;
+
+            return response;
         }
 
         public Task<ServiceResponse<List<Card>>> GetCardsByColour(string colour, int page)
@@ -146,9 +163,43 @@ namespace MTGCardsAPI.Services.CardService
             throw new NotImplementedException();
         }
 
-        public Task<ServiceResponse<List<Card>>> GetCardsByName(string name, int page)
+        public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByName(string name, int page)
         {
-            throw new NotImplementedException();
+            //Search and pagination
+            var pageResults = 5f;
+            var findCards = await _context.Cards
+                            .Include(c => c.Colours)
+                            .Include(c => c.Abilities)
+                            .Include(c => c.Set)
+                            .Include(c => c.Type)
+                            .Where(c => c.Name.ToLower()
+                            .Contains(name.ToLower())).ToListAsync();
+
+            var pageCount = Math.Ceiling(findCards.Count() / pageResults);
+            var paginateCards = findCards
+                                .Skip((page - 1) * (int)pageResults)
+                                .Take((int)pageResults)
+                                .ToList();
+
+            //Response
+            var response = new ServiceResponse<List<CardResponseDTO>> { Data = new List<CardResponseDTO>() };
+
+            if (findCards.Count > 0)
+            {
+                foreach (var card in paginateCards)
+                {    
+                    response.Data.Add(MapCardToResponseDTO(card));
+                };
+            }
+            else
+            {
+                response.Data = new List<CardResponseDTO>();
+                response.Message = "No cards found";
+            }
+            response.Pages = (int)pageCount;
+            response.CurrentPage = page;
+
+            return response;
         }
 
         public Task<ServiceResponse<List<Card>>> GetCardsByPower(int power, int page)
@@ -191,7 +242,7 @@ namespace MTGCardsAPI.Services.CardService
                 .ToListAsync();
         }
 
-        private async Task<ServiceResponse<Card>> FindAbilityById(int id)
+        private async Task<ServiceResponse<Card>> FindCardById(int id)
         {
             var response = new ServiceResponse<Card>();
             var card = await _context.Cards.FindAsync(id);
@@ -206,6 +257,25 @@ namespace MTGCardsAPI.Services.CardService
                 response.Data = card;
             }
             return response;
+        }
+
+        private CardResponseDTO MapCardToResponseDTO(Card card)
+        {
+            CardResponseDTO dto = new CardResponseDTO
+            {
+                Id = card.Id,
+                Name = card.Name,
+                ImageURL = card.ImageURL,
+                Colours = card.Colours.Select(c => c.Name).ToList(),
+                Abilities = card.Abilities.Select(c => c.Name).ToList(),
+                RulesText = card.RulesText,
+                FlavourText = card.FlavourText,
+                Power = card.Power,
+                Toughness = card.Toughness,
+                Set = card.Set.Name,
+                Type = card.Type.Select(c => c.Name).ToList(),
+            };
+            return dto;
         }
     }
 }

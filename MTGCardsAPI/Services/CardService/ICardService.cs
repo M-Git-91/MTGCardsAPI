@@ -3,9 +3,9 @@
     public interface ICardService
     {
         Task<ServiceResponse<List<CardResponseDTO>>> GetAllCards(int page);
-        Task<ServiceResponse<List<Card>>> GetCardsByName(string name, int page);
+        Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByName(string name, int page);
         Task<ServiceResponse<List<Card>>> GetCardsByColour(string colour, int page);
-        Task<ServiceResponse<List<Card>>> GetCardsByAbility(string ability, int page);
+        Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByAbility(string ability, int page);
         Task<ServiceResponse<List<Card>>> GetCardsByRulesText(string rulesText, int page);
         Task<ServiceResponse<List<Card>>> GetCardsByFlavourText(string flavourText, int page);
         Task<ServiceResponse<List<Card>>> GetCardsByPower(int power, int page);

@@ -16,15 +16,30 @@ namespace MTGCardsAPI.Controllers
             _cardService = cardService;
         }
 
-        [HttpGet("search/{page}")]
+        [HttpGet("searchall/{page}")]
         [ProducesResponseType(200)]
         public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> GetAllCards(int page)
         {
             return Ok(await _cardService.GetAllCards(page));
         }
 
+        [HttpGet("searchname/{name}/{page}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> GetCardsByName(string name, int page)
+        {
+            return Ok(await _cardService.GetCardsByName(name, page));
+        }
+
+        [HttpGet("searchability/{ability}/{page}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> GetCardsByAbility(string ability, int page)
+        {
+            return Ok(await _cardService.GetCardsByAbility(ability, page));
+        }
+
         [HttpPost("create")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
         public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> CreateCard(CardRequestDTO request)
         {
             return Ok(await _cardService.CreateCard(request));
