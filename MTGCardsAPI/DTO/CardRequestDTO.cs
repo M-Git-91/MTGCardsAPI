@@ -13,7 +13,7 @@ namespace MTGCardsAPI.DTO
         [MaxLength(1500)]
         public string RulesText { get; set; } = string.Empty;
         [MaxLength(500)]
-        public string? FlavourText { get; set; }
+        public string FlavourText { get; set; } = string.Empty;
         public int Power { get; set; }
         public int Toughness { get; set; }
         public int Set { get; set; }
