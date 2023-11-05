@@ -93,5 +93,13 @@ namespace MTGCardsAPI.Controllers
         {
             return Ok(await _cardService.CreateCard(request));
         }
+
+        [HttpPut("update")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> EditCard(int id, CardRequestDTO request)
+        {
+            return Ok(await _cardService.EditCard(id, request));
+        }
     }
 }

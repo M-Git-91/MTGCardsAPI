@@ -41,21 +41,45 @@ namespace MTGCardsAPI.Services.CardService
             foreach (var colour in request.Colours)
             {
                 var findColour = await _context.Colours.FirstOrDefaultAsync(c => c.Id == colour);
+                if (findColour == null)
+                {
+                    response.Success = false;
+                    response.Message = $"Colour with Id:{colour} was not found";
+                    return response;
+                }
                 newCard.Colours.Add(findColour);
             };
 
             foreach(var ability in request.Abilities) 
             {
                 var findAbility = await _context.Abilities.FirstOrDefaultAsync(a => a.Id == ability);
+                if (findAbility == null)
+                {
+                    response.Success = false;
+                    response.Message = $"Ability with Id:{ability} was not found";
+                    return response;
+                }
                 newCard.Abilities.Add(findAbility);
             }
 
             var findSet = await _context.Sets.FirstOrDefaultAsync(s => s.Id == request.Set);
+            if (findSet == null)
+            {
+                response.Success = false;
+                response.Message = $"Set with Id:{request.Set} was not found";
+                return response;
+            }
             newCard.Set = findSet;
 
             foreach (var type in request.Type)
             {
                 var findType = await _context.CardTypes.FirstOrDefaultAsync(a => a.Id == type);
+                if (findType == null)
+                {
+                    response.Success = false;
+                    response.Message = $"Type with Id:{type} was not found";
+                    return response;
+                }
                 newCard.Type.Add(findType);
             }
 
@@ -94,19 +118,98 @@ namespace MTGCardsAPI.Services.CardService
             return response;
         }
 
-        public Task<ServiceResponse<Card>> EditCard(int id, CardRequestDTO request)
+        public async Task<ServiceResponse<CardResponseDTO>> EditCard(int id, CardRequestDTO request)
         {
-            throw new NotImplementedException();
+            var response = new ServiceResponse<CardResponseDTO>();
+            var searchResult = await FindCardById(id);
+            if (searchResult.Success == false)
+            {
+                response.Success = false;
+                response.Message = searchResult.Message;
+                return response;
+            }
+            else
+            {
+                searchResult.Data.Name = request.Name;
+                searchResult.Data.ImageURL = request.ImageURL;
+
+                searchResult.Data.Colours.Clear();
+                foreach (var colour in request.Colours)
+                {
+                    var findColour = await _context.Colours.FirstOrDefaultAsync(c => c.Id == colour);
+                    if (findColour == null)
+                    {
+                        response.Success = false;
+                        response.Message = $"Colour with Id:{colour} was not found";
+                        return response;
+                    }
+                    searchResult.Data.Colours.Add(findColour);
+                };
+
+                searchResult.Data.Abilities.Clear();
+                foreach (var ability in request.Abilities)
+                {
+                    var findAbility = await _context.Abilities.FirstOrDefaultAsync(c => c.Id == ability);
+                    if (findAbility == null)
+                    {
+                        response.Success = false;
+                        response.Message = $"Ability with Id:{ability} was not found";
+                        return response;
+                    }
+                    searchResult.Data.Abilities.Add(findAbility);
+                };
+
+                searchResult.Data.RulesText = request.RulesText;
+                searchResult.Data.FlavourText = request.FlavourText;
+                searchResult.Data.Power = request.Power;
+                searchResult.Data.Toughness = request.Toughness;
+
+                var findSet = await _context.Sets.FirstOrDefaultAsync(s => s.Id == request.Set);
+                if (findSet == null)
+                {
+                    response.Success = false;
+                    response.Message = $"Set with Id:{request.Set} was not found";
+                    return response;
+                }
+                searchResult.Data.Set = findSet;
+
+                searchResult.Data.Type.Clear();
+                foreach (var type in request.Type)
+                {
+                    var findType = await _context.CardTypes.FirstOrDefaultAsync(a => a.Id == type);
+                    if (findType == null)
+                    {
+                        response.Success = false;
+                        response.Message = $"Type with Id:{type} was not found";
+                        return response;
+                    }
+
+                    searchResult.Data.Type.Add(findType);
+                };
+
+                _context.Cards.Update(searchResult.Data);
+                var saveCount = await _context.SaveChangesAsync();
+
+                if (saveCount > 0)
+                {
+                    response.Data = MapCardToResponseDTO(searchResult.Data);
+                    response.Success = true;
+                    response.Message = "Card was successfully updated.";
+                    return response;
+                }
+                response.Success = false;
+                response.Message = "Card was not updated.";
+                return response;     
+            }
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetAllCards(float resultsPerPage, int page)
-        {
-            //Search and pagination
+        {           
             var allCards = await GetAll();
             var pageCount = PageCount(allCards, resultsPerPage);
             var paginatedCards = PaginateCards(page, resultsPerPage, allCards);
 
-            return Response(allCards, paginatedCards, pageCount, page);
+            return GetResponse(allCards, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByAbility(string ability, float resultsPerPage, int page)
@@ -127,13 +230,13 @@ namespace MTGCardsAPI.Services.CardService
             }
 
             var cardsByAbility = _context.Cards
-                                    .Where(c => c.Abilities.Contains(findAbility))
-                                    .ToList();
+                                .Where(c => c.Abilities.Contains(findAbility))
+                                .ToList();
 
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsByAbility);
             var pageCount = PageCount(cardsByAbility, resultsPerPage);
 
-            return Response(cardsByAbility, paginatedCards, pageCount, page);
+            return GetResponse(cardsByAbility, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByColour(string colour, float resultsPerPage,int page)
@@ -160,7 +263,7 @@ namespace MTGCardsAPI.Services.CardService
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsByColour);
             var pageCount = PageCount(cardsByColour, resultsPerPage);
 
-            return Response(cardsByColour, paginatedCards, pageCount, page);
+            return GetResponse(cardsByColour, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByFlavourText(string flavourText, float resultsPerPage, int page)
@@ -173,7 +276,7 @@ namespace MTGCardsAPI.Services.CardService
             var pageCount = PageCount(cardsByFlavourText, resultsPerPage);
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsByFlavourText);
 
-            return Response(cardsByFlavourText, paginatedCards, pageCount, page);
+            return GetResponse(cardsByFlavourText, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByName(string name, float resultsPerPage,int page)
@@ -186,7 +289,7 @@ namespace MTGCardsAPI.Services.CardService
             var pageCount = PageCount(cardsByName, resultsPerPage);
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsByName);
 
-            return Response(cardsByName, paginatedCards, pageCount, page);
+            return GetResponse(cardsByName, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByPower(int power, float resultsPerPage, int page)
@@ -199,7 +302,7 @@ namespace MTGCardsAPI.Services.CardService
             var pageCount = PageCount(cardsByPower, resultsPerPage);
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsByPower);
 
-            return Response(cardsByPower, paginatedCards, pageCount, page);
+            return GetResponse(cardsByPower, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByRulesText(string rulesText, float resultsPerPage, int page)
@@ -212,7 +315,7 @@ namespace MTGCardsAPI.Services.CardService
             var pageCount = PageCount(cardsByRulesText, resultsPerPage);
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsByRulesText);
 
-            return Response(cardsByRulesText, paginatedCards, pageCount, page);
+            return GetResponse(cardsByRulesText, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsBySet(string setName, float resultsPerPage, int page)
@@ -240,7 +343,7 @@ namespace MTGCardsAPI.Services.CardService
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsBySet);
             var pageCount = PageCount(cardsBySet, resultsPerPage);
 
-            return Response(cardsBySet, paginatedCards, pageCount, page);
+            return GetResponse(cardsBySet, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByToughness(int toughness, float resultsPerPage, int page)
@@ -253,7 +356,7 @@ namespace MTGCardsAPI.Services.CardService
             var pageCount = PageCount(cardsByToughness, resultsPerPage);
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsByToughness);
 
-            return Response(cardsByToughness, paginatedCards, pageCount, page);
+            return GetResponse(cardsByToughness, paginatedCards, pageCount, page);
         }
 
         public async Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByType(string typeName, float resultsPerPage, int page)
@@ -281,7 +384,7 @@ namespace MTGCardsAPI.Services.CardService
             var paginatedCards = PaginateCards(page, resultsPerPage, cardsByType);
             var pageCount = PageCount(cardsByType, resultsPerPage);
 
-            return Response(cardsByType, paginatedCards, pageCount, page);
+            return GetResponse(cardsByType, paginatedCards, pageCount, page);
         }
 
         public Task<ServiceResponse<List<Card>>> RemoveCard(int id)
@@ -302,7 +405,12 @@ namespace MTGCardsAPI.Services.CardService
         private async Task<ServiceResponse<Card>> FindCardById(int id)
         {
             var response = new ServiceResponse<Card>();
-            var card = await _context.Cards.FindAsync(id);
+            var card = await _context.Cards
+                .Include(c => c.Colours)
+                .Include(c => c.Abilities)
+                .Include(c => c.Set)
+                .Include(c => c.Type)
+                .FirstAsync(c => c.Id == id);
 
             if (card == null)
             {
@@ -347,7 +455,7 @@ namespace MTGCardsAPI.Services.CardService
             return Math.Ceiling(cards.Count() / resultsPerPage);
         }
 
-        private ServiceResponse<List<CardResponseDTO>> Response(List<Card> cardsByX, List<Card> paginatedCards, double pageCount, int page)
+        private ServiceResponse<List<CardResponseDTO>> GetResponse(List<Card> cardsByX, List<Card> paginatedCards, double pageCount, int page)
         {
             var response = new ServiceResponse<List<CardResponseDTO>> { Data = new List<CardResponseDTO>() };
 

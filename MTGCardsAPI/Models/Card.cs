@@ -20,8 +20,8 @@ namespace MTGCardsAPI.Models
         public string RulesText { get; set; } = string.Empty;
         [MaxLength(500)]
         public string? FlavourText { get; set; }
-        public int Power { get; set; }
-        public int Toughness { get; set; }
+        public int? Power { get; set; }
+        public int? Toughness { get; set; }
         public Set Set { get; set; } = new Set();
         public List<CardType> Type { get; set; } = new List<CardType>();
     }

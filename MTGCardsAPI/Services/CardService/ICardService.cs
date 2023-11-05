@@ -13,7 +13,7 @@
         Task<ServiceResponse<List<CardResponseDTO>>> GetCardsBySet(string setName, float resultsPerPage, int page);
         Task<ServiceResponse<List<CardResponseDTO>>> GetCardsByType(string typeName, float resultsPerPage, int page);
         Task<ServiceResponse<CardResponseDTO>> CreateCard(CardRequestDTO request);
-        Task<ServiceResponse<Card>> EditCard(int id, CardRequestDTO request);
+        Task<ServiceResponse<CardResponseDTO>> EditCard(int id, CardRequestDTO request);
         Task<ServiceResponse<List<Card>>> RemoveCard(int id);
     }
 }
