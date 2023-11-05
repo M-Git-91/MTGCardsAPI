@@ -91,6 +91,10 @@ namespace MTGCardsAPI.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> CreateCard(CardRequestDTO request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(request);
+            }
             return Ok(await _cardService.CreateCard(request));
         }
 
@@ -99,6 +103,10 @@ namespace MTGCardsAPI.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> EditCard(int id, CardRequestDTO request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(request);
+            }
             return Ok(await _cardService.EditCard(id, request));
         }
     }

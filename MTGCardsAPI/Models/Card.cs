@@ -14,12 +14,11 @@ namespace MTGCardsAPI.Models
         public string Name { get; set; } = string.Empty;
         public string ImageURL { get; set; } = string.Empty;
         public List<Colour> Colours { get; set; } = new List<Colour>();
-        //public List<char> ManaCost { get; set; } = new List<char> { ' ' };
         public List<Ability> Abilities { get; set; } = new List<Ability>();
         [MaxLength(1500)]
         public string RulesText { get; set; } = string.Empty;
         [MaxLength(500)]
-        public string? FlavourText { get; set; }
+        public string FlavourText { get; set; } = string.Empty;
         public int? Power { get; set; }
         public int? Toughness { get; set; }
         public Set Set { get; set; } = new Set();
