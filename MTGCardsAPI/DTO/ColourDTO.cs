@@ -9,6 +9,6 @@ namespace MTGCardsAPI.DTO
         [Required]
         [MaxLength(100)]
         public string Name { get; set; } = string.Empty;
-        public string IconURL { get; set; }
+        public string IconURL { get; set; } = string.Empty;
     }
 }

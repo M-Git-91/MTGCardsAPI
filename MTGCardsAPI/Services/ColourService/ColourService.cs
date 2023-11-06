@@ -27,6 +27,7 @@ namespace MTGCardsAPI.Services.ColourService
             if (saveCount > 0)
             {
                 response.Data = _mapper.Map<ColourDTO>(newColour);
+                response.Message = "Colour was successfully created.";
             }
             else
             {
@@ -53,30 +54,31 @@ namespace MTGCardsAPI.Services.ColourService
                 searchResult.Data.Name = request.Name;
                 searchResult.Data.IconURL = request.IconURL;
 
-                response.Data = _mapper.Map<ColourDTO>(searchResult.Data);
-
                 _context.Update(searchResult.Data);
                 _context.SaveChanges();
+
+                response.Data = _mapper.Map<ColourDTO>(searchResult.Data);
+                response.Message = "Colour was successfully updated.";
             }
 
             return response;
         }
 
-        public async Task<ServiceResponse<List<ColourDTO>>> GetAllColours(int page)
+        public async Task<ServiceResponse<List<ColourDTO>>> GetAllColours(int page, float resultsPerPage)
         {
-            var pageResults = 5f;
-            var allColours = await GetAll();
-            var pageCount = Math.Ceiling(allColours.Count() / pageResults);
+            var allColours = await _context.Colours.ToListAsync();
+            var pageCount = PageCount(allColours, resultsPerPage);
 
 
             var paginateColours = await _context.Colours
-                                .Skip((page - 1) * (int)pageResults)
-                                .Take((int)pageResults)
+                                .Skip((page - 1) * (int)resultsPerPage)
+                                .Take((int)resultsPerPage)
                                 .ToListAsync();
 
             var mapDto = paginateColours.Select(pct => _mapper.Map<ColourDTO>(pct));
 
             var response = new ServiceResponse<List<ColourDTO>> { Data = new List<ColourDTO>() };
+            
             response.Data.AddRange(mapDto);
             response.Pages = (int)pageCount;
             response.CurrentPage = page;
@@ -84,7 +86,7 @@ namespace MTGCardsAPI.Services.ColourService
             return response;
         }
 
-        public async Task<ServiceResponse<List<ColourDTO>>> GetColoursByName(string name, int page)
+        public async Task<ServiceResponse<List<ColourDTO>>> GetColoursByName(string name, int page, float resultsPerPage)
         {
             var response = new ServiceResponse<List<ColourDTO>> { Data = new List<ColourDTO>() };
             var searchResult = await _context.Colours
@@ -95,15 +97,13 @@ namespace MTGCardsAPI.Services.ColourService
 
             if (searchResult.Count > 0)
             {
-                var pageResults = 5f;
-                var pageCount = Math.Ceiling(searchResult.Count() / pageResults);
+                var pageCount = PageCount(searchResult, resultsPerPage);
 
-                var paginateColours = searchResult
-                                .Skip((page - 1) * (int)pageResults)
-                                .Take((int)pageResults);
+                var paginateColours = PaginateColours(page, resultsPerPage, searchResult);
 
                 var mapDto = paginateColours.Select(sr => _mapper.Map<ColourDTO>(sr));
                 response.Data.AddRange(mapDto);
+                response.Message = "Colour(s) found.";
                 response.Pages = (int)pageCount;
                 response.CurrentPage = page;
             }
@@ -128,31 +128,12 @@ namespace MTGCardsAPI.Services.ColourService
                 await _context.SaveChangesAsync();
 
                 response.Data = new List<ColourDTO>();
+                response.Message = "Colour was successfully deleted.";
             }
             else
             {
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
-            }
-
-            return response;
-        }
-
-        private async Task<List<ColourDTO>> GetAll()
-        {
-            var searchResult = await _context.Colours.ToListAsync();
-
-            var response = new List<ColourDTO>();
-
-            foreach (var colour in searchResult)
-            {
-                ColourDTO dto = new ColourDTO
-                {
-                    Id = colour.Id,
-                    Name = colour.Name,
-                    IconURL = colour.IconURL,
-                };
-                response.Add(dto);
             }
 
             return response;
@@ -173,6 +154,18 @@ namespace MTGCardsAPI.Services.ColourService
                 response.Data = colour;
             }
             return response;
+        }
+
+        private List<Colour> PaginateColours(int page, float resultsPerPage, List<Colour> colours)
+        {
+            return colours.Skip((page - 1) * (int)resultsPerPage)
+                        .Take((int)resultsPerPage)
+                        .ToList();
+        }
+
+        private double PageCount(List<Colour> colours, float resultsPerPage)
+        {
+            return Math.Ceiling(colours.Count() / resultsPerPage);
         }
     }
 }

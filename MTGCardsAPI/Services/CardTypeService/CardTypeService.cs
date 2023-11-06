@@ -41,21 +41,16 @@ namespace MTGCardsAPI.Services.CardTypeService
             return response;
         }
 
-        public async Task<ServiceResponse<List<CardTypeDTO>>> GetAllTypes(int page)
-        {   
-            var pageResults = 5f;
-            var allCardTypes = await GetAll();
-            var pageCount = Math.Ceiling(allCardTypes.Count() / pageResults);
-            
-
-            var paginateCardTypes = await _context.CardTypes
-                                .Skip((page - 1) * (int)pageResults)
-                                .Take((int)pageResults)
-                                .ToListAsync();
+        public async Task<ServiceResponse<List<CardTypeDTO>>> GetAllTypes(int page, float resultsPerPage)
+        {
+            var allCardTypes = await _context.CardTypes.ToListAsync();
+            var pageCount = PageCount(allCardTypes, resultsPerPage);
+            var paginateCardTypes = PaginateTypes(page, resultsPerPage, allCardTypes);
             
             var mapDto = paginateCardTypes.Select(pct => _mapper.Map<CardTypeDTO>(pct));
             
             var response = new ServiceResponse<List<CardTypeDTO>> { Data = new List<CardTypeDTO>() };
+            
             response.Data.AddRange(mapDto);
             response.Pages = (int)pageCount;
             response.CurrentPage = page;
@@ -63,7 +58,7 @@ namespace MTGCardsAPI.Services.CardTypeService
             return response;
         }
 
-        public async Task<ServiceResponse<List<CardTypeDTO>>> GetTypesByName(string name, int page)
+        public async Task<ServiceResponse<List<CardTypeDTO>>> GetTypesByName(string name, int page, float resultsPerPage)
         {
             var response = new ServiceResponse<List<CardTypeDTO>> { Data = new List<CardTypeDTO>() };
             var searchResult = await _context.CardTypes
@@ -74,12 +69,8 @@ namespace MTGCardsAPI.Services.CardTypeService
 
             if (searchResult.Count > 0)
             {
-                var pageResults = 5f;
-                var pageCount = Math.Ceiling(searchResult.Count() / pageResults);
-
-                var paginateCardTypes = searchResult
-                                .Skip((page - 1) * (int)pageResults)
-                                .Take((int)pageResults);
+                var pageCount = PageCount(searchResult, resultsPerPage);
+                var paginateCardTypes = PaginateTypes(page, resultsPerPage, searchResult);
 
                 var mapDto = paginateCardTypes.Select(sr => _mapper.Map<CardTypeDTO>(sr));
                 response.Data.AddRange(mapDto);
@@ -107,10 +98,10 @@ namespace MTGCardsAPI.Services.CardTypeService
             if (saveCount > 0)
             {
                 response.Data = _mapper.Map<CardTypeDTO>(newCardType);
+                response.Message = "Cardtype was successfully created.";
             }
             else 
             {
-                response.Data = new CardTypeDTO();
                 response.Success = false;
                 response.Message = "Cardtype was not created.";
             }
@@ -129,30 +120,12 @@ namespace MTGCardsAPI.Services.CardTypeService
                 await _context.SaveChangesAsync();
 
                 response.Data = new List<CardTypeDTO>();
+                response.Message = "Cardtype was successfully deleted.";
             }
             else
             {
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
-            }
-
-            return response;
-        }
-
-        private async Task<List<CardTypeDTO>> GetAll() 
-        {
-            var searchResult = await _context.CardTypes.ToListAsync();
-
-            var response = new List<CardTypeDTO>();
-
-            foreach (var cardType in searchResult)
-            {
-                CardTypeDTO dto = new CardTypeDTO
-                {
-                    Id = cardType.Id,
-                    Name = cardType.Name,
-                };
-                response.Add(dto);
             }
 
             return response;
@@ -173,6 +146,18 @@ namespace MTGCardsAPI.Services.CardTypeService
                 response.Data = card;
             }
             return response;
+        }
+
+        private List<CardType> PaginateTypes(int page, float resultsPerPage, List<CardType> types)
+        {
+            return types.Skip((page - 1) * (int)resultsPerPage)
+                        .Take((int)resultsPerPage)
+                        .ToList();
+        }
+
+        private double PageCount(List<CardType> types, float resultsPerPage)
+        {
+            return Math.Ceiling(types.Count() / resultsPerPage);
         }
     }
 }

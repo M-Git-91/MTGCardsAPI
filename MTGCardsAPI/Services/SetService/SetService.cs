@@ -28,6 +28,7 @@ namespace MTGCardsAPI.Services.SetService
             if (saveCount > 0)
             {
                 response.Data = _mapper.Map<SetDTO>(newSet);
+                response.Message = "Set was successfully created.";
             }
             else
             {
@@ -54,26 +55,22 @@ namespace MTGCardsAPI.Services.SetService
                 searchResult.Data.Name = request.Name;
                 searchResult.Data.IconURL = request.IconURL;
 
-                response.Data = _mapper.Map<SetDTO>(searchResult.Data);
-
                 _context.Update(searchResult.Data);
                 _context.SaveChanges();
+
+                response.Data = _mapper.Map<SetDTO>(searchResult.Data);
+                response.Message = "Set was successfully updated.";
             }
 
             return response;
         }
 
-        public async Task<ServiceResponse<List<SetDTO>>> GetAllSets(int page)
+        public async Task<ServiceResponse<List<SetDTO>>> GetAllSets(int page, float resultsPerPage)
         {
-            var pageResults = 5f;
-            var allSets = await GetAll();
-            var pageCount = Math.Ceiling(allSets.Count() / pageResults);
-
-
-            var paginateSets = await _context.Sets
-                                .Skip((page - 1) * (int)pageResults)
-                                .Take((int)pageResults)
-                                .ToListAsync();
+            var allSets = await _context.Sets.ToListAsync();
+            
+            var pageCount = PageCount(allSets, resultsPerPage);
+            var paginateSets = PaginateSets(page, resultsPerPage, allSets);
 
             var mapDto = paginateSets.Select(pct => _mapper.Map<SetDTO>(pct));
 
@@ -85,7 +82,7 @@ namespace MTGCardsAPI.Services.SetService
             return response;
         }
 
-        public async Task<ServiceResponse<List<SetDTO>>> GetSetsByName(string name, int page)
+        public async Task<ServiceResponse<List<SetDTO>>> GetSetsByName(string name, int page, float resultsPerPage)
         {
             var response = new ServiceResponse<List<SetDTO>> { Data = new List<SetDTO>() };
             var searchResult = await _context.Sets
@@ -96,12 +93,9 @@ namespace MTGCardsAPI.Services.SetService
 
             if (searchResult.Count > 0)
             {
-                var pageResults = 5f;
-                var pageCount = Math.Ceiling(searchResult.Count() / pageResults);
+                var pageCount = PageCount(searchResult, resultsPerPage);
 
-                var paginatedResults = searchResult
-                                .Skip((page - 1) * (int)pageResults)
-                                .Take((int)pageResults);
+                var paginatedResults = PaginateSets(page, resultsPerPage, searchResult);
 
                 var mapDto = paginatedResults.Select(sr => _mapper.Map<SetDTO>(sr));
                 response.Data.AddRange(mapDto);
@@ -129,31 +123,12 @@ namespace MTGCardsAPI.Services.SetService
                 await _context.SaveChangesAsync();
 
                 response.Data = new List<SetDTO>();
+                response.Message = "Set was successfully deleted.";
             }
             else
             {
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
-            }
-
-            return response;
-        }
-
-        private async Task<List<SetDTO>> GetAll()
-        {
-            var searchResult = await _context.Sets.ToListAsync();
-
-            var response = new List<SetDTO>();
-
-            foreach (var set in searchResult)
-            {
-                SetDTO dto = new SetDTO
-                {
-                    Id = set.Id,
-                    Name = set.Name,
-                    IconURL = set.IconURL,
-                };
-                response.Add(dto);
             }
 
             return response;
@@ -174,6 +149,18 @@ namespace MTGCardsAPI.Services.SetService
                 response.Data = set;
             }
             return response;
+        }
+
+        private List<Set> PaginateSets(int page, float resultsPerPage, List<Set> sets)
+        {
+            return sets.Skip((page - 1) * (int)resultsPerPage)
+                        .Take((int)resultsPerPage)
+                        .ToList();
+        }
+
+        private double PageCount(List<Set> sets, float resultsPerPage)
+        {
+            return Math.Ceiling(sets.Count() / resultsPerPage);
         }
     }
 }

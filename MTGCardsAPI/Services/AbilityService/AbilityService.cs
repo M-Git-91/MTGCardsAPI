@@ -28,6 +28,7 @@ namespace MTGCardsAPI.Services.AbilityService
             if (saveCount > 0)
             {
                 response.Data = _mapper.Map<AbilityDTO>(newAbility);
+                response.Message = "Ability was successfully created.";
             }
             else
             {
@@ -55,6 +56,7 @@ namespace MTGCardsAPI.Services.AbilityService
                 searchResult.Data.Description = request.Description;
                 
                 response.Data = _mapper.Map<AbilityDTO>(searchResult.Data);
+                response.Message = "Ability was successfully updated.";
 
                 _context.Update(searchResult.Data);
                 _context.SaveChanges();
@@ -63,7 +65,7 @@ namespace MTGCardsAPI.Services.AbilityService
             return response;
         }
 
-        public async Task<ServiceResponse<List<AbilityDTO>>> GetAbilitiesByName(string name, int page)
+        public async Task<ServiceResponse<List<AbilityDTO>>> GetAbilitiesByName(string name, int page, float resultsPerPage)
         {
             var response = new ServiceResponse<List<AbilityDTO>> { Data = new List<AbilityDTO>() };
             var searchResult = await _context.Abilities
@@ -74,12 +76,9 @@ namespace MTGCardsAPI.Services.AbilityService
 
             if (searchResult.Count > 0)
             {
-                var pageResults = 5f;
-                var pageCount = Math.Ceiling(searchResult.Count() / pageResults);
+                var pageCount = PageCount(searchResult, resultsPerPage);
 
-                var paginatedResults = searchResult
-                                .Skip((page - 1) * (int)pageResults)
-                                .Take((int)pageResults);
+                var paginatedResults = PaginateAbilities(page, resultsPerPage, searchResult);
 
                 var mapDto = paginatedResults.Select(sr => _mapper.Map<AbilityDTO>(sr));
                 response.Data.AddRange(mapDto);
@@ -96,19 +95,13 @@ namespace MTGCardsAPI.Services.AbilityService
             return response;
         }
 
-        public async Task<ServiceResponse<List<AbilityDTO>>> GetAllAbilities(int page)
+        public async Task<ServiceResponse<List<AbilityDTO>>> GetAllAbilities(int page, float resultsPerPage)
         {
-            var pageResults = 5f;
-            var allAbilities = await GetAll();
-            var pageCount = Math.Ceiling(allAbilities.Count() / pageResults);
+            var allAbilities = await _context.Abilities.ToListAsync();
+            var pageCount = PageCount(allAbilities, resultsPerPage);
+            var paginatedAbilities = PaginateAbilities(page, resultsPerPage, allAbilities);
 
-
-            var paginateAbilities = await _context.Abilities
-                                .Skip((page - 1) * (int)pageResults)
-                                .Take((int)pageResults)
-                                .ToListAsync();
-
-            var mapDto = paginateAbilities.Select(pct => _mapper.Map<AbilityDTO>(pct));
+            var mapDto = paginatedAbilities.Select(pct => _mapper.Map<AbilityDTO>(pct));
 
             var response = new ServiceResponse<List<AbilityDTO>> { Data = new List<AbilityDTO>() };
             response.Data.AddRange(mapDto);
@@ -129,30 +122,13 @@ namespace MTGCardsAPI.Services.AbilityService
                 await _context.SaveChangesAsync();
 
                 response.Data = new List<AbilityDTO>();
+                response.Success = true;
+                response.Message = "Ability was successfully deleted.";
             }
             else
             {
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
-            }
-
-            return response;
-        }
-
-        private async Task<List<AbilityDTO>> GetAll()
-        {
-            var searchResult = await _context.Abilities.ToListAsync();
-
-            var response = new List<AbilityDTO>();
-
-            foreach (var ability in searchResult)
-            {
-                AbilityDTO dto = new AbilityDTO
-                {
-                    Id = ability.Id,
-                    Name = ability.Name,
-                };
-                response.Add(dto);
             }
 
             return response;
@@ -173,6 +149,18 @@ namespace MTGCardsAPI.Services.AbilityService
                 response.Data = ability;
             }
             return response;
+        }
+
+        private List<Ability> PaginateAbilities(int page, float resultsPerPage, List<Ability> abilities)
+        {
+            return abilities.Skip((page - 1) * (int)resultsPerPage)
+                        .Take((int)resultsPerPage)
+                        .ToList();
+        }
+
+        private double PageCount(List<Ability> abilities, float resultsPerPage)
+        {
+            return Math.Ceiling(abilities.Count() / resultsPerPage);
         }
     }
 }

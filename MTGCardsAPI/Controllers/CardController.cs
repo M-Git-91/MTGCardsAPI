@@ -89,7 +89,7 @@ namespace MTGCardsAPI.Controllers
         [HttpPost("create")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> CreateCard(CardRequestDTO request)
+        public async Task<ActionResult<ServiceResponse<CardResponseDTO>>> CreateCard(CardRequestDTO request)
         {
             if (!ModelState.IsValid)
             {
@@ -98,16 +98,24 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _cardService.CreateCard(request));
         }
 
-        [HttpPut("update")]
+        [HttpPut("update/{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> EditCard(int id, CardRequestDTO request)
+        public async Task<ActionResult<ServiceResponse<CardResponseDTO>>> EditCard(int id, CardRequestDTO request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(request);
             }
             return Ok(await _cardService.EditCard(id, request));
+        }
+
+        [HttpDelete("delete/{id}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<CardResponseDTO>>>> RemoveCard(int id)
+        {     
+            return Ok(await _cardService.RemoveCard(id));
         }
     }
 }

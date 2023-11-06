@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTGCardsAPI.Services.AbilityService;
+using System.ComponentModel.DataAnnotations;
 
 namespace MTGCardsAPI.Controllers
 {
@@ -15,18 +16,18 @@ namespace MTGCardsAPI.Controllers
             _abilityService = abilityService;
         }
 
-        [HttpGet("search/{page}")]
+        [HttpGet("search/{resultsPerPage}/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAllAbilities(int page)
+        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAllAbilities(int page, float resultsPerPage)
         {
-            return Ok(await _abilityService.GetAllAbilities(page));
+            return Ok(await _abilityService.GetAllAbilities(page, resultsPerPage));
         }
 
-        [HttpGet("search/{name}/{page}")]
+        [HttpGet("search/{name}/{resultsPerPage}/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAbilitiesByName(string name, int page)
+        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAbilitiesByName(string name, int page, float resultsPerPage)
         {
-            return Ok(await _abilityService.GetAbilitiesByName(name, page));
+            return Ok(await _abilityService.GetAbilitiesByName(name, page, resultsPerPage));
         }
 
         [HttpPut("edit/{id}")]
@@ -44,7 +45,7 @@ namespace MTGCardsAPI.Controllers
         [HttpPost("create")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<List<AbilityDTO>>> CreateAbility(AbilityDTO request)
+        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> CreateAbility(AbilityDTO request)
         {
             if (!ModelState.IsValid)
             {
@@ -55,7 +56,7 @@ namespace MTGCardsAPI.Controllers
 
         [HttpDelete("delete/{id}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<List<AbilityDTO>>> RemoveAbility(int id)
+        public async Task<ActionResult<ServiceResponse<AbilityDTO>>> RemoveAbility(int id)
         {
             return Ok(await _abilityService.RemoveAbility(id));
         }
