@@ -10,7 +10,7 @@ namespace MTGCardsAPI.Services.CardTypeService
         Task<ServiceResponse<List<CardTypeDTO>>> GetTypesByName(string name, int page, float resultsPerPage);
         Task<ServiceResponse<CardTypeDTO>> CreateCardType(CardTypeDTO request);
         Task<ServiceResponse<CardTypeDTO>> EditCardType(int id, CardTypeDTO request);
-        Task<ServiceResponse<List<CardTypeDTO>>> RemoveCardType(int id);
+        Task<ServiceResponse<bool>> RemoveCardType(int id);
 
     }
 }

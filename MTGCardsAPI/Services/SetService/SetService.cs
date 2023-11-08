@@ -112,9 +112,9 @@ namespace MTGCardsAPI.Services.SetService
             return response;
         }
 
-        public async Task<ServiceResponse<List<SetDTO>>> RemoveSet(int id)
+        public async Task<ServiceResponse<bool>> RemoveSet(int id)
         {
-            var response = new ServiceResponse<List<SetDTO>>();
+            var response = new ServiceResponse<bool>();
             var searchResult = await FindSetById(id);
 
             if (searchResult.Data != null)
@@ -122,7 +122,7 @@ namespace MTGCardsAPI.Services.SetService
                 _context.Sets.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = new List<SetDTO>();
+                response.Data = false;
                 response.Message = "Set was successfully deleted.";
             }
             else

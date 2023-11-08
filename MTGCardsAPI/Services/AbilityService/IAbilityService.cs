@@ -6,6 +6,6 @@
         Task<ServiceResponse<List<AbilityDTO>>> GetAbilitiesByName(string name, int page, float resultsPerPage);
         Task<ServiceResponse<AbilityDTO>> CreateAbility(AbilityDTO request);
         Task<ServiceResponse<AbilityDTO>> EditAbility(int id, AbilityDTO request);
-        Task<ServiceResponse<List<AbilityDTO>>> RemoveAbility(int id);
+        Task<ServiceResponse<bool>> RemoveAbility(int id);
     }
 }

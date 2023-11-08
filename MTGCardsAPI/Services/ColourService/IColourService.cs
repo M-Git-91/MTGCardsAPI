@@ -6,6 +6,6 @@
         Task<ServiceResponse<List<ColourDTO>>> GetColoursByName(string name, int page, float resultsPerPage);
         Task<ServiceResponse<ColourDTO>> CreateColour(ColourDTO request);
         Task<ServiceResponse<ColourDTO>> EditColour(int id, ColourDTO request);
-        Task<ServiceResponse<List<ColourDTO>>> RemoveColour(int id);
+        Task<ServiceResponse<bool>> RemoveColour(int id);
     }
 }

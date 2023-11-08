@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using MTGCardsAPI.Models;
 using MTGCardsAPI.Services.CardTypeService;
+using System.ComponentModel.DataAnnotations;
 
 namespace MTGCardsAPI.Controllers
 {
@@ -17,16 +18,24 @@ namespace MTGCardsAPI.Controllers
 
         [HttpGet("search/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<CardTypeDTO>>>> GetAllTypes(int page, float resultsPerPage)
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<CardTypeDTO>>>> GetAllTypes(int page, [Required] float resultsPerPage)
         {
+            if (resultsPerPage == 0 || page == 0)
+                return BadRequest();
+
             return Ok(await _typeService.GetAllTypes(page, resultsPerPage));
         }
 
 
         [HttpGet("search/{name}/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<CardTypeDTO>>>> GetTypesByName(string name, int page, float resultsPerPage) 
-        {             
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<CardTypeDTO>>>> GetTypesByName(string name, int page, [Required] float resultsPerPage) 
+        {
+            if (resultsPerPage == 0 || page == 0)
+                return BadRequest();
+
             return Ok(await _typeService.GetTypesByName(name, page, resultsPerPage));
         }
 
@@ -58,7 +67,7 @@ namespace MTGCardsAPI.Controllers
 
         [HttpDelete("delete/{id}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<CardTypeDTO>>>> RemoveCardType(int id) 
+        public async Task<ActionResult<ServiceResponse<bool>>> RemoveCardType(int id) 
         {   
             return Ok(await _typeService.RemoveCardType(id));
         }

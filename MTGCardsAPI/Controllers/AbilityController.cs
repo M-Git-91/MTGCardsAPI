@@ -16,17 +16,25 @@ namespace MTGCardsAPI.Controllers
             _abilityService = abilityService;
         }
 
-        [HttpGet("search/{resultsPerPage}/{page}")]
+        [HttpGet("search/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAllAbilities(int page, float resultsPerPage)
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAllAbilities(int page, [Required]float resultsPerPage)
         {
+            if (resultsPerPage == 0 || page == 0)
+                return BadRequest();
+
             return Ok(await _abilityService.GetAllAbilities(page, resultsPerPage));
         }
 
-        [HttpGet("search/{name}/{resultsPerPage}/{page}")]
+        [HttpGet("search/{name}/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAbilitiesByName(string name, int page, float resultsPerPage)
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAbilitiesByName(string name, int page, [Required] float resultsPerPage)
         {
+            if (resultsPerPage == 0 || page == 0)
+                return BadRequest();
+
             return Ok(await _abilityService.GetAbilitiesByName(name, page, resultsPerPage));
         }
 
@@ -56,7 +64,7 @@ namespace MTGCardsAPI.Controllers
 
         [HttpDelete("delete/{id}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<AbilityDTO>>> RemoveAbility(int id)
+        public async Task<ActionResult<ServiceResponse<bool>>> RemoveAbility(int id)
         {
             return Ok(await _abilityService.RemoveAbility(id));
         }

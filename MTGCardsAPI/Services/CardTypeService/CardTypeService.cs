@@ -109,9 +109,9 @@ namespace MTGCardsAPI.Services.CardTypeService
             return response;
         }
 
-        public async Task<ServiceResponse<List<CardTypeDTO>>> RemoveCardType(int id)
+        public async Task<ServiceResponse<bool>> RemoveCardType(int id)
         {
-            var response = new ServiceResponse<List<CardTypeDTO>>();
+            var response = new ServiceResponse<bool>();
             var searchResult = await FindCardTypeById(id);
 
             if (searchResult.Data != null)
@@ -119,11 +119,12 @@ namespace MTGCardsAPI.Services.CardTypeService
                 _context.CardTypes.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = new List<CardTypeDTO>();
+                response.Data = false;
                 response.Message = "Cardtype was successfully deleted.";
             }
             else
             {
+                response.Data = false;
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
             }

@@ -387,12 +387,13 @@ namespace MTGCardsAPI.Services.CardService
             return GETResponse(cardsByType, paginatedCards, pageCount, page);
         }
 
-        public async Task<ServiceResponse<List<CardResponseDTO>>> RemoveCard(int id)
+        public async Task<ServiceResponse<bool>> RemoveCard(int id)
         {
-            var response = new ServiceResponse<List<CardResponseDTO>>();
+            var response = new ServiceResponse<bool>();
             var searchResult = await FindCardById(id);
             if (searchResult.Success == false)
             {
+                response.Data = false;
                 response.Success = false;
                 response.Message = searchResult.Message;
                 return response;
@@ -401,7 +402,7 @@ namespace MTGCardsAPI.Services.CardService
             _context.Cards.Remove(searchResult.Data);
             await _context.SaveChangesAsync();
 
-            response.Data = new List<CardResponseDTO>();
+            response.Data = false;
             response.Success = true;
             response.Message = "Card was successfully deleted.";
             return response;

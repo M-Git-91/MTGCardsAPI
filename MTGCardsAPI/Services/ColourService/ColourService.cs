@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using System.Runtime.InteropServices;
 
 namespace MTGCardsAPI.Services.ColourService
 {
@@ -117,9 +118,9 @@ namespace MTGCardsAPI.Services.ColourService
             return response;
         }
 
-        public async Task<ServiceResponse<List<ColourDTO>>> RemoveColour(int id)
+        public async Task<ServiceResponse<bool>> RemoveColour(int id)
         {
-            var response = new ServiceResponse<List<ColourDTO>>();
+            var response = new ServiceResponse<bool>();
             var searchResult = await FindColourById(id);
 
             if (searchResult.Data != null)
@@ -127,11 +128,12 @@ namespace MTGCardsAPI.Services.ColourService
                 _context.Colours.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = new List<ColourDTO>();
+                response.Data = false;
                 response.Message = "Colour was successfully deleted.";
             }
             else
             {
+                response.Data = false;
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
             }

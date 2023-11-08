@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTGCardsAPI.Services.ColourService;
+using System.ComponentModel.DataAnnotations;
 
 namespace MTGCardsAPI.Controllers
 {
@@ -17,15 +18,23 @@ namespace MTGCardsAPI.Controllers
 
         [HttpGet("search/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<ColourDTO>>>> GetAllColours(int page, float resultsPerPage)
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<ColourDTO>>>> GetAllColours(int page, [Required] float resultsPerPage)
         {
+            if (resultsPerPage == 0 || page == 0)
+                return BadRequest();
+
             return Ok(await _colourService.GetAllColours(page, resultsPerPage));
         }
 
         [HttpGet("search/{name}/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<ColourDTO>>>> GetColoursByName(string name, int page, float resultsPerPage)
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<ColourDTO>>>> GetColoursByName(string name, int page, [Required] float resultsPerPage)
         {
+            if (resultsPerPage == 0 || page == 0)
+                return BadRequest();
+
             return Ok(await _colourService.GetColoursByName(name, page, resultsPerPage));
         }
 
@@ -55,7 +64,7 @@ namespace MTGCardsAPI.Controllers
 
         [HttpDelete("delete/{id}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<ColourDTO>>>> RemoveColour(int id)
+        public async Task<ActionResult<ServiceResponse<bool>>> RemoveColour(int id)
         {
             return Ok(await _colourService.RemoveColour(id));
         }

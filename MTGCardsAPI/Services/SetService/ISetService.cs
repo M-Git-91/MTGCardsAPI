@@ -6,6 +6,6 @@
         Task<ServiceResponse<List<SetDTO>>> GetSetsByName(string name, int page, float resultsPerPage);
         Task<ServiceResponse<SetDTO>> CreateSet(SetDTO request);
         Task<ServiceResponse<SetDTO>> EditSet(int id, SetDTO request);
-        Task<ServiceResponse<List<SetDTO>>> RemoveSet(int id);
+        Task<ServiceResponse<bool>> RemoveSet(int id);
     }
 }

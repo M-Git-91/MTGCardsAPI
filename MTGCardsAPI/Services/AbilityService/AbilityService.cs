@@ -111,9 +111,9 @@ namespace MTGCardsAPI.Services.AbilityService
             return response;
         }
 
-        public async Task<ServiceResponse<List<AbilityDTO>>> RemoveAbility(int id)
+        public async Task<ServiceResponse<bool>> RemoveAbility(int id)
         {
-            var response = new ServiceResponse<List<AbilityDTO>>();
+            var response = new ServiceResponse<bool>();
             var searchResult = await FindAbilityById(id);
 
             if (searchResult.Data != null)
@@ -121,12 +121,13 @@ namespace MTGCardsAPI.Services.AbilityService
                 _context.Abilities.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = new List<AbilityDTO>();
+                response.Data = false;
                 response.Success = true;
                 response.Message = "Ability was successfully deleted.";
             }
             else
             {
+                response.Data = false;
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
             }

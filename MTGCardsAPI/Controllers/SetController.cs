@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTGCardsAPI.Services.SetService;
+using System.ComponentModel.DataAnnotations;
 
 namespace MTGCardsAPI.Controllers
 {
@@ -17,15 +18,23 @@ namespace MTGCardsAPI.Controllers
 
         [HttpGet("search/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<SetDTO>>>> GetAllSets(int page, float resultsPerPage)
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<SetDTO>>>> GetAllSets(int page, [Required] float resultsPerPage)
         {
+            if (resultsPerPage == 0 || page == 0)
+                return BadRequest();
+
             return Ok(await _setService.GetAllSets(page, resultsPerPage));
         }
 
         [HttpGet("search/{name}/{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<SetDTO>>>> GetSetsByName(string name, int page, float resultsPerPage)
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ServiceResponse<List<SetDTO>>>> GetSetsByName(string name, int page, [Required] float resultsPerPage)
         {
+            if (resultsPerPage == 0 || page == 0)
+                return BadRequest();
+
             return Ok(await _setService.GetSetsByName(name, page, resultsPerPage));
         }
 
@@ -55,7 +64,7 @@ namespace MTGCardsAPI.Controllers
 
         [HttpDelete("delete/{id}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<ServiceResponse<List<SetDTO>>>> RemoveSet(int id)
+        public async Task<ActionResult<ServiceResponse<bool>>> RemoveSet(int id)
         {
             return Ok(await _setService.RemoveSet(id));
         }
