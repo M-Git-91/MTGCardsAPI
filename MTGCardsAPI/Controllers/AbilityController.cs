@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTGCardsAPI.Services.AbilityService;
 using System.ComponentModel.DataAnnotations;
@@ -17,8 +18,7 @@ namespace MTGCardsAPI.Controllers
         }
 
         [HttpGet("search/{page}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(200), ProducesResponseType(400)]
         public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAllAbilities(int page, [Required]float resultsPerPage)
         {
             if (resultsPerPage == 0 || page == 0)
@@ -28,8 +28,7 @@ namespace MTGCardsAPI.Controllers
         }
 
         [HttpGet("search/{name}/{page}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(200), ProducesResponseType(400)]
         public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> GetAbilitiesByName(string name, int page, [Required] float resultsPerPage)
         {
             if (resultsPerPage == 0 || page == 0)
@@ -38,9 +37,8 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _abilityService.GetAbilitiesByName(name, page, resultsPerPage));
         }
 
-        [HttpPut("edit/{id}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [HttpPut("edit/{id}"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(400), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<AbilityDTO>>> EditAbility(int id, AbilityDTO request)
         {
             if (!ModelState.IsValid)
@@ -50,9 +48,8 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _abilityService.EditAbility(id, request));
         }
 
-        [HttpPost("create")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [HttpPost("create"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(400), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<List<AbilityDTO>>>> CreateAbility(AbilityDTO request)
         {
             if (!ModelState.IsValid)
@@ -62,8 +59,8 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _abilityService.CreateAbility(request));
         }
 
-        [HttpDelete("delete/{id}")]
-        [ProducesResponseType(200)]
+        [HttpDelete("delete/{id}"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<bool>>> RemoveAbility(int id)
         {
             return Ok(await _abilityService.RemoveAbility(id));

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTGCardsAPI.Services.ColourService;
 using System.ComponentModel.DataAnnotations;
@@ -17,8 +18,7 @@ namespace MTGCardsAPI.Controllers
         }
 
         [HttpGet("search/{page}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(200), ProducesResponseType(400)]
         public async Task<ActionResult<ServiceResponse<List<ColourDTO>>>> GetAllColours(int page, [Required] float resultsPerPage)
         {
             if (resultsPerPage == 0 || page == 0)
@@ -28,8 +28,7 @@ namespace MTGCardsAPI.Controllers
         }
 
         [HttpGet("search/{name}/{page}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(200), ProducesResponseType(400)]
         public async Task<ActionResult<ServiceResponse<List<ColourDTO>>>> GetColoursByName(string name, int page, [Required] float resultsPerPage)
         {
             if (resultsPerPage == 0 || page == 0)
@@ -38,9 +37,8 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _colourService.GetColoursByName(name, page, resultsPerPage));
         }
 
-        [HttpPost("create")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [HttpPost("create"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(400), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<ColourDTO>>> CreateColour(ColourDTO request)
         {
             if (!ModelState.IsValid)
@@ -50,9 +48,8 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _colourService.CreateColour(request));
         }
 
-        [HttpPut("edit/{id}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [HttpPut("edit/{id}"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(400), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<ColourDTO>>> EditColour(int id, ColourDTO request)
         {
             if (!ModelState.IsValid)
@@ -62,8 +59,8 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _colourService.EditColour(id, request));
         }
 
-        [HttpDelete("delete/{id}")]
-        [ProducesResponseType(200)]
+        [HttpDelete("delete/{id}"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(400), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<bool>>> RemoveColour(int id)
         {
             return Ok(await _colourService.RemoveColour(id));

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using MTGCardsAPI.Models;
 using MTGCardsAPI.Services.CardTypeService;
 using System.ComponentModel.DataAnnotations;
@@ -40,9 +41,8 @@ namespace MTGCardsAPI.Controllers
         }
 
 
-        [HttpPost("create")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [HttpPost("create"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(400), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<CardTypeDTO>>> CreateCardType(CardTypeDTO request) 
         {
             if (!ModelState.IsValid)
@@ -53,9 +53,8 @@ namespace MTGCardsAPI.Controllers
         }
 
 
-        [HttpPut("edit/{id}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [HttpPut("edit/{id}"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(400), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<CardTypeDTO>>> EditCardType(int id, CardTypeDTO request) 
         {
             if (!ModelState.IsValid)
@@ -65,8 +64,8 @@ namespace MTGCardsAPI.Controllers
             return Ok(await _typeService.EditCardType(id, request));
         }
 
-        [HttpDelete("delete/{id}")]
-        [ProducesResponseType(200)]
+        [HttpDelete("delete/{id}"), Authorize]
+        [ProducesResponseType(200), ProducesResponseType(400), ProducesResponseType(401)]
         public async Task<ActionResult<ServiceResponse<bool>>> RemoveCardType(int id) 
         {   
             return Ok(await _typeService.RemoveCardType(id));
