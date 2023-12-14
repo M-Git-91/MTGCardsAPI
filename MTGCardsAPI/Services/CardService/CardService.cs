@@ -87,22 +87,24 @@ namespace MTGCardsAPI.Services.CardService
             _context.Cards.Add(newCard);
             var saveCount = await _context.SaveChangesAsync();
 
+            var cardResponseDTO = new CardResponseDTO
+            {
+                Id = newCard.Id,
+                Name = newCard.Name,
+                ImageURL = newCard.ImageURL,
+                Colours = newCard.Colours.Select(c => c.Name).ToList(),
+                Abilities = newCard.Abilities.Select(c => c.Name).ToList(),
+                RulesText = newCard.RulesText,
+                FlavourText = newCard.FlavourText,
+                Power = newCard.Power,
+                Toughness = newCard.Toughness,
+                Set = newCard.Set.Name,
+                Type = newCard.Type.Select(c => c.Name).ToList()
+            };
+
             if (saveCount > 0)
             {
-                response.Data = new CardResponseDTO
-                {
-                    Id = newCard.Id,
-                    Name = newCard.Name,
-                    ImageURL = newCard.ImageURL,
-                    Colours = newCard.Colours.Select(c => c.Name).ToList(),
-                    Abilities = newCard.Abilities.Select(c => c.Name).ToList(),
-                    RulesText = newCard.RulesText,
-                    FlavourText = newCard.FlavourText,
-                    Power = newCard.Power,
-                    Toughness = newCard.Toughness,
-                    Set = newCard.Set.Name,
-                    Type = newCard.Type.Select(c => c.Name).ToList()
-                };
+                response.Data = cardResponseDTO;
                 response.Success = true;
                 response.Message = "Card was successfully created.";
 
@@ -110,7 +112,7 @@ namespace MTGCardsAPI.Services.CardService
             }
             else
             {
-                response.Data = new CardResponseDTO();
+                response.Data = cardResponseDTO;
                 response.Success = false;
                 response.Message = "Card was not created.";
             }
@@ -197,6 +199,7 @@ namespace MTGCardsAPI.Services.CardService
                     response.Message = "Card was successfully updated.";
                     return response;
                 }
+                response.Data = MapCardToResponseDTO(searchResult.Data);
                 response.Success = false;
                 response.Message = "Card was not updated.";
                 return response;     
@@ -387,13 +390,12 @@ namespace MTGCardsAPI.Services.CardService
             return GETResponse(cardsByType, paginatedCards, pageCount, page);
         }
 
-        public async Task<ServiceResponse<bool>> RemoveCard(int id)
+        public async Task<ServiceResponse<CardResponseDTO>> RemoveCard(int id)
         {
-            var response = new ServiceResponse<bool>();
+            var response = new ServiceResponse<CardResponseDTO>();
             var searchResult = await FindCardById(id);
             if (searchResult.Success == false)
             {
-                response.Data = false;
                 response.Success = false;
                 response.Message = searchResult.Message;
                 return response;
@@ -402,7 +404,6 @@ namespace MTGCardsAPI.Services.CardService
             _context.Cards.Remove(searchResult.Data);
             await _context.SaveChangesAsync();
 
-            response.Data = false;
             response.Success = true;
             response.Message = "Card was successfully deleted.";
             return response;

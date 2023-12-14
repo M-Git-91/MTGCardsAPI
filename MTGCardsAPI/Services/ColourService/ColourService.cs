@@ -56,10 +56,18 @@ namespace MTGCardsAPI.Services.ColourService
                 searchResult.Data.IconURL = request.IconURL;
 
                 _context.Update(searchResult.Data);
-                _context.SaveChanges();
-
-                response.Data = _mapper.Map<ColourDTO>(searchResult.Data);
-                response.Message = "Colour was successfully updated.";
+                var saveCount = _context.SaveChanges();
+                if(saveCount > 0) 
+                {
+                    response.Data = _mapper.Map<ColourDTO>(searchResult.Data);
+                    response.Message = "Colour was successfully updated.";
+                }
+                else
+                {
+                    response.Data = _mapper.Map<ColourDTO>(searchResult.Data);
+                    response.Success = false;
+                    response.Message = "Colour was not updated.";
+                }
             }
 
             return response;
@@ -118,9 +126,9 @@ namespace MTGCardsAPI.Services.ColourService
             return response;
         }
 
-        public async Task<ServiceResponse<bool>> RemoveColour(int id)
+        public async Task<ServiceResponse<ColourDTO>> RemoveColour(int id)
         {
-            var response = new ServiceResponse<bool>();
+            var response = new ServiceResponse<ColourDTO>();
             var searchResult = await FindColourById(id);
 
             if (searchResult.Data != null)
@@ -128,12 +136,10 @@ namespace MTGCardsAPI.Services.ColourService
                 _context.Colours.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = false;
                 response.Message = "Colour was successfully deleted.";
             }
             else
             {
-                response.Data = false;
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
             }

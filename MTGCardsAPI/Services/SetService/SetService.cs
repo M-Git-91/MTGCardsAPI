@@ -32,7 +32,6 @@ namespace MTGCardsAPI.Services.SetService
             }
             else
             {
-                response.Data = new SetDTO();
                 response.Success = false;
                 response.Message = "Set was not created.";
             }
@@ -56,10 +55,18 @@ namespace MTGCardsAPI.Services.SetService
                 searchResult.Data.IconURL = request.IconURL;
 
                 _context.Update(searchResult.Data);
-                _context.SaveChanges();
-
-                response.Data = _mapper.Map<SetDTO>(searchResult.Data);
-                response.Message = "Set was successfully updated.";
+                var saveCount = _context.SaveChanges();
+                if (saveCount > 0) 
+                {
+                    response.Data = _mapper.Map<SetDTO>(searchResult.Data);
+                    response.Message = "Set was successfully updated.";
+                }
+                else
+                {
+                    response.Data = _mapper.Map<SetDTO>(searchResult.Data);
+                    response.Success = false;
+                    response.Message = "Set was not updated.";
+                }
             }
 
             return response;
@@ -112,9 +119,9 @@ namespace MTGCardsAPI.Services.SetService
             return response;
         }
 
-        public async Task<ServiceResponse<bool>> RemoveSet(int id)
+        public async Task<ServiceResponse<SetDTO>> RemoveSet(int id)
         {
-            var response = new ServiceResponse<bool>();
+            var response = new ServiceResponse<SetDTO>();
             var searchResult = await FindSetById(id);
 
             if (searchResult.Data != null)
@@ -122,7 +129,6 @@ namespace MTGCardsAPI.Services.SetService
                 _context.Sets.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = false;
                 response.Message = "Set was successfully deleted.";
             }
             else

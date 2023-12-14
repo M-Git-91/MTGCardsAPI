@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 
 namespace MTGCardsAPI.Services.AbilityService
@@ -32,7 +33,6 @@ namespace MTGCardsAPI.Services.AbilityService
             }
             else
             {
-                response.Data = new AbilityDTO();
                 response.Success = false;
                 response.Message = "Ability was not created.";
             }
@@ -53,13 +53,24 @@ namespace MTGCardsAPI.Services.AbilityService
             else
             {
                 searchResult.Data.Name = request.Name;
-                searchResult.Data.Description = request.Description;
-                
-                response.Data = _mapper.Map<AbilityDTO>(searchResult.Data);
-                response.Message = "Ability was successfully updated.";
+                searchResult.Data.Description = request.Description;               
 
                 _context.Update(searchResult.Data);
-                _context.SaveChanges();
+                var saveCount = _context.SaveChanges();
+
+                if (saveCount > 0)
+                {
+                    response.Data = _mapper.Map<AbilityDTO>(searchResult.Data);
+                    response.Message = "Ability was successfully updated.";
+                }
+                else
+                {
+                    response.Data = request;
+                    response.Success = false;
+                    response.Message = "Ability was not updated.";
+                }
+
+
             }
 
             return response;
@@ -111,9 +122,9 @@ namespace MTGCardsAPI.Services.AbilityService
             return response;
         }
 
-        public async Task<ServiceResponse<bool>> RemoveAbility(int id)
+        public async Task<ServiceResponse<AbilityDTO>> RemoveAbility(int id)
         {
-            var response = new ServiceResponse<bool>();
+            var response = new ServiceResponse<AbilityDTO>();
             var searchResult = await FindAbilityById(id);
 
             if (searchResult.Data != null)
@@ -121,13 +132,11 @@ namespace MTGCardsAPI.Services.AbilityService
                 _context.Abilities.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = false;
                 response.Success = true;
                 response.Message = "Ability was successfully deleted.";
             }
             else
             {
-                response.Data = false;
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
             }

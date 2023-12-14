@@ -32,10 +32,21 @@ namespace MTGCardsAPI.Services.CardTypeService
             else
             {
                 searchResult.Data.Name = request.Name;
-                response.Data = _mapper.Map<CardTypeDTO>(searchResult.Data);
-
+                
                 _context.Update(searchResult.Data);
-                _context.SaveChanges();
+                var saveCount = _context.SaveChanges();
+
+                if(saveCount > 0) 
+                {
+                    response.Data = _mapper.Map<CardTypeDTO>(searchResult.Data);
+                    response.Message = "Type was successfully updated.";
+                }
+                else
+                {
+                    response.Data = _mapper.Map<CardTypeDTO>(searchResult.Data);
+                    response.Success = false;
+                    response.Message = "Type was not updated.";
+                }
             }
 
             return response;
@@ -109,9 +120,9 @@ namespace MTGCardsAPI.Services.CardTypeService
             return response;
         }
 
-        public async Task<ServiceResponse<bool>> RemoveCardType(int id)
+        public async Task<ServiceResponse<CardTypeDTO>> RemoveCardType(int id)
         {
-            var response = new ServiceResponse<bool>();
+            var response = new ServiceResponse<CardTypeDTO>();
             var searchResult = await FindCardTypeById(id);
 
             if (searchResult.Data != null)
@@ -119,12 +130,10 @@ namespace MTGCardsAPI.Services.CardTypeService
                 _context.CardTypes.Remove(searchResult.Data);
                 await _context.SaveChangesAsync();
 
-                response.Data = false;
                 response.Message = "Cardtype was successfully deleted.";
             }
             else
             {
-                response.Data = false;
                 response.Success = searchResult.Success;
                 response.Message = searchResult.Message;
             }
